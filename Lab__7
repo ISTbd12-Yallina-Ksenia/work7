@@ -1,0 +1,86 @@
+##Требуется для своего варианта второй части л.р. №6 (усложненной программы) написать объектно-ориентированную реализацию. 
+##В программе должны быть реализованы минимум один класс, три атрибута, два метода
+##Задача из лаб/раб №6: У девушки P пиджаков, B блузок, U юбок, Pl платьев. Составьте все возможные наряды из этих предметов.
+##Ограничение: наряды составляются только из двух разных элементов одежды.
+##Целевая функция: поиск самого дорогого наряда
+import random
+P=int(input("Введите количество пиджаков: P="))
+U=int(input("Введите количество юбок: U="))
+B=int(input("Введите количество блузок: B="))
+Pl=int(input("Введите количество платьев: Pl="))
+print("Наряд составляется только из двух разных элементов одежды\nОбозначения: P - пиджак, U - юбка, B - блузка, Pl - платье")
+class Cloth: #класс для формирования элементов одежды
+    def __init__(self, name, count): #создаем элемент одежды
+        self.name=name
+        self.count_of_elements=count
+        self.elements=[]
+    def elem_type_cloth(self): #элементов одежды каждого типа может быть n штук. формируем список всех элементов одеждый одного типа
+        for i in range(self.count_of_elements):
+            self.elements.append("{}_{}".format(self.name, i+1))
+class Generate: #класс для генерации сочетаний элементов одежды
+    def __init__(self):
+        self.count_recursive=0 #количество возможных нарядов, посчитанных рекурсивно
+        self.count_iterative=0 #то же самое, но итерационно
+        self.attire=[] #самый дорогой наряд
+        self.max_price_of_attire=0 #его стоимость
+        self.price_of_each_element={} #словарь с ценами каждого элемента одежды каждого типа
+    def establish_prices(self, arr): #устанавливаем цены на каждый эл-т одежды каждого типа
+        for i in arr:
+            self.price_of_each_element[i]=random.randint(400,7000)
+    def purpose_function(self, arr, sum_price=0): #целевая функция для нахождения самого дорогого наряда и его стоимости
+        for i in arr:
+            sum_price+=self.price_of_each_element.get(i)
+        if sum_price>self.max_price_of_attire:
+              self.max_price_of_attire=sum_price
+              self.attire=arr.copy()
+        sum_price=0
+    def generate_iterative(self,ex1, ex2, count_1=0, count_2=0): #итеративная функция для поиска всех возможных сочетаний
+        while count_2<(len(ex2.elements)):
+           if count_1<len(ex1.elements):
+              arr=[ex1.elements[count_1], ex2.elements[count_2]]
+              self.count_iterative+=1
+              self.purpose_function(arr)
+              count_2+=1
+              print(arr, sep='. ', end=', ')
+              if count_2==len(ex2.elements):
+                   count_2=0
+                   count_1+=1
+              if count_1==len(ex1.elements):
+                 break
+    def generate_recursive(self, arr, num, num2, k=[]): #рекурсивная функция для поиска всех возможных сочетаний
+        if num == 0:  
+            return [[]] 
+        l =[]  
+        for j in range(0, len(arr)):  
+            first = arr[j] 
+            rest = arr[j + 1:] 
+            for x in self.generate_recursive(rest, num-1, num2):
+                l.append([first]+x)
+                if len(l[0])==num2:
+                    for m in range(num2):
+                        k.append(l[0][m][0])
+                    if num2==len(set(k)):
+                        print(l[0], end=', ')
+                        self.count_recursive+=1
+                        self.purpose_function(l[0]) 
+                    l=[]
+                    k=[]      
+        return l
+combination=Generate()
+blouse=Cloth("B", B) #создаем объекты (элементы) одежды каждого типа
+skirt=Cloth("U", U)
+jacket=Cloth("P", P)
+dress=Cloth("Рl", Pl)
+blouse.elem_type_cloth() #формируем список из n количества элементов одежды каждого типа
+skirt.elem_type_cloth()
+jacket.elem_type_cloth()
+dress.elem_type_cloth()
+combination.establish_prices(blouse.elements+skirt.elements+jacket.elements+dress.elements) #устан-ем цены на каждый эл-т одежды каждого типа
+print("\nИтерационное решение:")
+combination.generate_iterative(blouse, skirt) #решаем итеративно 
+combination.generate_iterative(jacket, dress)
+print("\nКоличество нарядов: {}. Самый дорогой наряд: {}. Его стоимость: {}".format(combination.count_iterative, combination.attire, combination.max_price_of_attire))
+print("\nРекурсивное решение:")
+combination.generate_recursive(blouse.elements+skirt.elements, 2, 2, k=[]) #решаем рекурсивно
+combination.generate_recursive(jacket.elements+dress.elements, 2, 2, k=[])
+print("\nКоличество нарядов: {}. Самый дорогой наряд: {}. Его стоимость: {}".format(combination.count_recursive, combination.attire, combination.max_price_of_attire))
